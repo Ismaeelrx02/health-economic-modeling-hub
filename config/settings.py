@@ -19,7 +19,17 @@ THEME = {
 }
 
 # Database Settings
-DATABASE_URL = "sqlite:///health_econ_hub.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///health_econ_hub.db")
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 5))
+DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", 10))
+DB_POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", 30))
+DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", 3600))
+
+# AI Service Settings
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 
 # Calculation Settings
 DEFAULT_DISCOUNT_RATE = 0.03

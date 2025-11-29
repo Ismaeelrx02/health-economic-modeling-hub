@@ -6,9 +6,24 @@ Red, White, and Black color scheme with collapsible sidebar
 import dash
 from dash import Dash, html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
+import logging
 
 # Import configuration
 from config.settings import THEME, APP_TITLE, PORT, HOST
+
+# Initialize database
+from database import init_db
+from database.connection import dispose_db
+
+# Import AI chat component
+from components.ai.AIChat import create_ai_chat_button
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Import modules (each has layout + callbacks together)
 from modules.dashboard import layout as dashboard_layout
@@ -31,11 +46,21 @@ app = Dash(
     assets_folder='assets'  # Dash automatically loads custom.css and app.js from assets/
 )
 
-# App layout with collapsible sidebar
+# Initialize database on startup
+try:
+    init_db()
+    logger.info("Database initialized successfully")
+except Exception as e:
+    logger.error(f"Database initialization failed: {e}")
+
+# App layout with collapsible sidebar and AI chat
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     dcc.Store(id='ai-mode-store', data='ai-assisted'),  # Store AI mode globally
     dcc.Store(id='sidebar-state', data={'collapsed': False}),  # Store sidebar state
+    
+    # AI Chat Component (floating button + modal)
+    create_ai_chat_button(),
     
     # Header Bar (Red background)
     html.Div([
@@ -229,10 +254,136 @@ compare_callbacks(app)
 dsa_callbacks(app)
 psa_callbacks(app)
 
+# ============= AI CHAT CALLBACKS =============
+
+from services.ai_service import AIService
+from components.ai.AIChat import format_chat_message
+from datetime import datetime
+
+# Initialize AI service
+ai_service = AIService()
+
+@app.callback(
+    Output('ai-chat-modal', 'is_open'),
+    [Input('ai-chat-button', 'n_clicks'),
+     Input('ai-chat-close', 'n_clicks')],
+    [State('ai-chat-modal', 'is_open')]
+)
+def toggle_ai_modal(open_clicks, close_clicks, is_open):
+    """Toggle AI chat modal"""
+    if open_clicks or close_clicks:
+        return not is_open
+    return is_open
+
+@app.callback(
+    Output('ai-provider-badge', 'children'),
+    Input('ai-provider-selector', 'value')
+)
+def update_provider_badge(provider):
+    """Update provider badge in modal header"""
+    if provider == 'openai':
+        return "OpenAI"
+    elif provider == 'anthropic':
+        return "Anthropic"
+    return "AI"
+
+@app.callback(
+    [Output('ai-chat-messages', 'children'),
+     Output('ai-chat-input', 'value'),
+     Output('ai-conversation-history', 'data'),
+     Output('ai-chat-status', 'children')],
+    [Input('ai-chat-send', 'n_clicks'),
+     Input('ai-chat-input', 'n_submit'),
+     Input('ai-chat-clear', 'n_clicks')],
+    [State('ai-chat-input', 'value'),
+     State('ai-conversation-history', 'data'),
+     State('ai-chat-messages', 'children'),
+     State('ai-provider-selector', 'value')],
+    prevent_initial_call=True
+)
+def handle_chat(send_clicks, n_submit, clear_clicks, message, history, current_messages, provider):
+    """Handle chat interactions"""
+    from dash import callback_context
+    
+    if not callback_context.triggered:
+        return current_messages, '', history, ''
+    
+    trigger = callback_context.triggered[0]['prop_id']
+    
+    # Clear chat
+    if 'clear' in trigger:
+        initial_message = html.Div(
+            [
+                html.Div(
+                    [
+                        html.I(className="fas fa-robot me-2"),
+                        "Chat cleared. How can I help you?"
+                    ],
+                    className="fw-bold mb-2"
+                ),
+            ],
+            className="alert alert-info mb-3"
+        )
+        return [initial_message], '', [], 'Chat history cleared'
+    
+    # Send message
+    if ('send' in trigger or 'submit' in trigger) and message and message.strip():
+        # Initialize service with selected provider
+        global ai_service
+        ai_service = AIService(provider=provider)
+        
+        # Check if service is available
+        if not ai_service.is_available():
+            error_msg = format_chat_message(
+                "⚠️ AI service is not configured. Please add your API key to environment variables:\n\n"
+                "- For OpenAI: Set `OPENAI_API_KEY`\n"
+                "- For Anthropic: Set `ANTHROPIC_API_KEY`",
+                is_user=False,
+                timestamp=datetime.now().strftime("%H:%M")
+            )
+            return current_messages + [error_msg], '', history, 'API key missing'
+        
+        # Add user message
+        timestamp = datetime.now().strftime("%H:%M")
+        user_msg = format_chat_message(message, is_user=True, timestamp=timestamp)
+        
+        # Get AI response
+        try:
+            response = ai_service.chat(message, conversation_history=history)
+            ai_msg = format_chat_message(response, is_user=False, timestamp=datetime.now().strftime("%H:%M"))
+            
+            # Update history
+            new_history = history + [
+                {"role": "user", "content": message},
+                {"role": "assistant", "content": response}
+            ]
+            
+            return current_messages + [user_msg, ai_msg], '', new_history, f'Response from {provider.upper()}'
+        
+        except Exception as e:
+            error_msg = format_chat_message(
+                f"Sorry, I encountered an error: {str(e)}",
+                is_user=False,
+                timestamp=datetime.now().strftime("%H:%M")
+            )
+            return current_messages + [user_msg, error_msg], '', history, f'Error: {str(e)}'
+    
+    return current_messages, message, history, ''
+
+# ============= END AI CHAT CALLBACKS =============
+
 # Expose server for production deployment (Gunicorn, etc.)
 server = app.server
 
 if __name__ == '__main__':
     print(f"🚀 Starting Health Economic Modeling Hub on {HOST}:{PORT}")
     print(f"📊 Dashboard: http://{HOST}:{PORT}")
-    app.run_server(host=HOST, port=PORT, debug=True)
+    print(f"🤖 AI Chat: Available")
+    print(f"💾 Database: Initialized")
+    
+    try:
+        app.run_server(host=HOST, port=PORT, debug=True)
+    finally:
+        # Clean up database connections on shutdown
+        dispose_db()
+        logger.info("Application shutdown complete")

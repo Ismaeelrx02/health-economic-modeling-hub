@@ -13,6 +13,7 @@ scipy==1.14.1
 
 # Database
 sqlalchemy==2.0.35
+psycopg2-binary==2.9.9  # PostgreSQL adapter
 
 # AI & Agentic Framework (compatible with Python 3.12)
 crewai>=1.0.0
@@ -21,6 +22,10 @@ langchain>=0.3.0
 langchain-openai>=0.2.0
 langchain-community>=0.3.0
 crewai-tools>=0.12.0
+
+# AI Chat Services
+openai>=1.57.4  # OpenAI API
+anthropic>=0.44.0  # Anthropic Claude API
 
 # Utilities
 python-dotenv>=1.1.1
