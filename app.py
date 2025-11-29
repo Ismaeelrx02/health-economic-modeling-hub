@@ -219,8 +219,7 @@ def display_page(pathname):
         return psa_layout
     elif pathname in ['/protocol', '/literature']:
         return html.Div([
-            html.H2(f"{pathname[1:].title()} Page", className="text-center mt-5"),
-            html.P("This page is under construction.", className="text-center text-muted"),
+            html.H2(f"{pathname[1:].title()}", className="text-center mt-5"),
             dbc.Button("Go Home", href="/", color="danger", className="mt-3")
         ], className="text-center")
     else:

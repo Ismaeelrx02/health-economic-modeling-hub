@@ -3,8 +3,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 layout = dbc.Container([
-    html.H1("Probabilistic Sensitivity Analysis (PSA)", className="mb-4"),
-    html.P("Monte Carlo simulation for uncertainty analysis", className="text-muted mb-4"),
+    html.H1("Probabilistic Analysis", className="mb-4"),
     
     dbc.Row([
         dbc.Col([

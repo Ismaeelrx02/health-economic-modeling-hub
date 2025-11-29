@@ -3,8 +3,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 layout = dbc.Container([
-    html.H1("Compare Models", className="mb-4"),
-    html.P("Compare cost-effectiveness across different models", className="text-muted mb-4"),
+    html.H1("Compare Strategies", className="mb-4"),
     
     dbc.Row([
         dbc.Col([

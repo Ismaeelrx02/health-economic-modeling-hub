@@ -3,8 +3,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 layout = dbc.Container([
-    html.H1("Markov Cohort Model", className="mb-4"),
-    html.P("Build and simulate Markov cohort models", className="text-muted mb-4"),
+    html.H1("Markov Model", className="mb-4"),
     
     dbc.Row([
         dbc.Col([

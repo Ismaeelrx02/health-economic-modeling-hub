@@ -3,8 +3,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 layout = dbc.Container([
-    html.H1("Partitioned Survival Model (PSM)", className="mb-4"),
-    html.P("Oncology-focused survival analysis", className="text-muted mb-4"),
+    html.H1("Partitioned Survival Model", className="mb-4"),
     
     dbc.Row([
         dbc.Col([

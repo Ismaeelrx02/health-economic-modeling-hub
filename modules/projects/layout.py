@@ -8,8 +8,7 @@ layout = dbc.Container([
     # Header with action button
     dbc.Row([
         dbc.Col([
-            html.H1("Projects", className="mb-2"),
-            html.P("Manage your health economics projects", className="text-muted")
+            html.H1("Projects", className="mb-2")
         ], width=8),
         dbc.Col([
             dbc.Button([

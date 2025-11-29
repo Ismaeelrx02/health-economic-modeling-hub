@@ -10,8 +10,7 @@ layout = dbc.Container([
     # Header
     dbc.Row([
         dbc.Col([
-            html.H1("Health Economic Modeling Hub", className="mb-2"),
-            html.P("Professional cost-effectiveness analysis platform", className="text-muted")
+            html.H1("Dashboard", className="mb-2")
         ])
     ], className="mb-4"),
     

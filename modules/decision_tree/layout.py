@@ -3,8 +3,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 layout = dbc.Container([
-    html.H1("Decision Tree Analysis", className="mb-4"),
-    html.P("Build and analyze decision tree models for cost-effectiveness analysis", className="text-muted mb-4"),
+    html.H1("Decision Tree", className="mb-4"),
     
     dbc.Row([
         dbc.Col([
