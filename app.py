@@ -31,9 +31,11 @@ from modules.projects import layout as projects_layout, register_callbacks as pr
 from modules.decision_tree import layout as decision_tree_layout, register_callbacks as decision_tree_callbacks
 from modules.markov import layout as markov_layout, register_callbacks as markov_callbacks
 from modules.psm import layout as psm_layout, register_callbacks as psm_callbacks
-from modules.compare import layout as compare_layout, register_callbacks as compare_callbacks
+from modules.input import layout as input_layout, register_callbacks as input_callbacks
+from modules.base_case import layout as base_case_layout, register_callbacks as base_case_callbacks
 from modules.dsa import layout as dsa_layout, register_callbacks as dsa_callbacks
 from modules.psa import layout as psa_layout, register_callbacks as psa_callbacks
+from modules.report import layout as report_layout, register_callbacks as report_callbacks
 
 # Initialize Dash app with Bootstrap theme + custom assets
 app = Dash(
@@ -105,41 +107,69 @@ app.layout = html.Div([
                     html.Span("Projects", className='nav-text')
                 ], href="/projects", id="nav-projects", className='nav-item'),
                 
-                # Decision Tree
-                dbc.NavLink([
-                    html.I(className="fas fa-sitemap"),
-                    html.Span("Decision Tree", className='nav-text')
-                ], href="/decision-tree", id="nav-decision-tree", className='nav-item'),
+                # Model Setup Section
+                html.Div([
+                    html.Div([
+                        html.I(className="fas fa-cogs me-2"),
+                        html.Span("Model Setup", className='nav-text')
+                    ], className='nav-section-header'),
+                    
+                    # Decision Tree
+                    dbc.NavLink([
+                        html.I(className="fas fa-code-branch"),
+                        html.Span("Decision Tree", className='nav-text')
+                    ], href="/decision-tree", id="nav-decision-tree", className='nav-item nav-sub-item'),
+                    
+                    # Markov Model
+                    dbc.NavLink([
+                        html.I(className="fas fa-circle-notch"),
+                        html.Span("Markov Model", className='nav-text')
+                    ], href="/markov", id="nav-markov", className='nav-item nav-sub-item'),
+                    
+                    # Partitioned Survival Model
+                    dbc.NavLink([
+                        html.I(className="fas fa-chart-area"),
+                        html.Span("Partitioned Survival", className='nav-text')
+                    ], href="/psm", id="nav-psm", className='nav-item nav-sub-item'),
+                ], className='nav-section'),
                 
-                # Markov Model
+                # Input
                 dbc.NavLink([
-                    html.I(className="fas fa-project-diagram"),
-                    html.Span("Markov Model", className='nav-text')
-                ], href="/markov", id="nav-markov", className='nav-item'),
+                    html.I(className="fas fa-keyboard"),
+                    html.Span("Input", className='nav-text')
+                ], href="/input", id="nav-input", className='nav-item'),
                 
-                # PSM
+                # Base Case Analysis
                 dbc.NavLink([
-                    html.I(className="fas fa-chart-line"),
-                    html.Span("Partitioned Survival", className='nav-text')
-                ], href="/psm", id="nav-psm", className='nav-item'),
+                    html.I(className="fas fa-calculator"),
+                    html.Span("Base Case Analysis", className='nav-text')
+                ], href="/base-case", id="nav-base-case", className='nav-item'),
                 
-                # Compare
-                dbc.NavLink([
-                    html.I(className="fas fa-balance-scale"),
-                    html.Span("Compare Strategies", className='nav-text')
-                ], href="/compare", id="nav-compare", className='nav-item'),
+                # Sensitivity Analysis Section
+                html.Div([
+                    html.Div([
+                        html.I(className="fas fa-adjust me-2"),
+                        html.Span("Sensitivity Analysis", className='nav-text')
+                    ], className='nav-section-header'),
+                    
+                    # Deterministic SA
+                    dbc.NavLink([
+                        html.I(className="fas fa-chart-bar"),
+                        html.Span("Deterministic SA", className='nav-text')
+                    ], href="/dsa", id="nav-dsa", className='nav-item nav-sub-item'),
+                    
+                    # Probabilistic SA
+                    dbc.NavLink([
+                        html.I(className="fas fa-dice-d20"),
+                        html.Span("Probabilistic SA", className='nav-text')
+                    ], href="/psa", id="nav-psa", className='nav-item nav-sub-item'),
+                ], className='nav-section'),
                 
-                # DSA
+                # Report
                 dbc.NavLink([
-                    html.I(className="fas fa-sliders-h"),
-                    html.Span("Sensitivity Analysis", className='nav-text')
-                ], href="/dsa", id="nav-dsa", className='nav-item'),
-                
-                # PSA
-                dbc.NavLink([
-                    html.I(className="fas fa-dice"),
-                    html.Span("Probabilistic Analysis", className='nav-text')
-                ], href="/psa", id="nav-psa", className='nav-item'),
+                    html.I(className="fas fa-file-pdf"),
+                    html.Span("Report", className='nav-text')
+                ], href="/report", id="nav-report", className='nav-item'),
             ], className='sidebar-nav')
         ], id='sidebar', className='app-sidebar'),
         
@@ -205,23 +235,22 @@ def display_page(pathname):
         return dashboard_layout
     elif pathname == '/projects':
         return projects_layout
-    elif pathname == '/decision-tree' or pathname == '/screening':
+    elif pathname == '/decision-tree':
         return decision_tree_layout
-    elif pathname == '/markov' or pathname == '/quality':
+    elif pathname == '/markov':
         return markov_layout
-    elif pathname == '/psm' or pathname == '/extraction':
+    elif pathname == '/psm':
         return psm_layout
-    elif pathname == '/compare' or pathname == '/synthesis':
-        return compare_layout
-    elif pathname == '/dsa' or pathname == '/report':
+    elif pathname == '/input':
+        return input_layout
+    elif pathname == '/base-case':
+        return base_case_layout
+    elif pathname == '/dsa':
         return dsa_layout
-    elif pathname == '/psa' or pathname == '/settings':
+    elif pathname == '/psa':
         return psa_layout
-    elif pathname in ['/protocol', '/literature']:
-        return html.Div([
-            html.H2(f"{pathname[1:].title()}", className="text-center mt-5"),
-            dbc.Button("Go Home", href="/", color="danger", className="mt-3")
-        ], className="text-center")
+    elif pathname == '/report':
+        return report_layout
     else:
         return html.Div([
             html.H1("404: Page Not Found", className="text-center mt-5"),
@@ -233,9 +262,11 @@ projects_callbacks(app)
 decision_tree_callbacks(app)
 markov_callbacks(app)
 psm_callbacks(app)
-compare_callbacks(app)
+input_callbacks(app)
+base_case_callbacks(app)
 dsa_callbacks(app)
 psa_callbacks(app)
+report_callbacks(app)
 
 # ============= AI CHAT CALLBACKS =============
 

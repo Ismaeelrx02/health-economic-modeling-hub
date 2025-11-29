@@ -1,11 +1,11 @@
 """
-Projects Callbacks - Complete CRUD operations with database integration
+Projects Module - Complete Callbacks with Database Integration
+Full CRUD operations for project management
 """
-from dash import Input, Output, State, ALL, callback_context, html, dcc
+from dash import Input, Output, State, ALL, callback_context, html
 import dash_bootstrap_components as dbc
 from database.services import ProjectService
 from datetime import datetime
-import json
 
 
 def create_project_card(project):
@@ -21,8 +21,6 @@ def create_project_card(project):
         'markov': 'Markov Model',
         'psm': 'PSM'
     }
-    
-    created = datetime.fromisoformat(project['created_at'].replace('Z', '+00:00')) if isinstance(project['created_at'], str) else project['created_at']
     
     return dbc.Col([
         dbc.Card([
@@ -44,7 +42,7 @@ def create_project_card(project):
                 html.Div([
                     html.Small([
                         html.I(className="fas fa-calendar me-1"),
-                        f"Created: {created.strftime('%b %d, %Y')}"
+                        f"Created: {datetime.fromisoformat(project['created_at']).strftime('%b %d, %Y')}"
                     ], className="text-muted me-3"),
                     html.Small([
                         html.I(className="fas fa-layer-group me-1"),
@@ -85,31 +83,13 @@ def register_callbacks(app):
     
     @app.callback(
         Output('projects-list', 'children'),
-        [Input('url', 'pathname'),
+        [Input('btn-refresh-projects', 'n_clicks') if hasattr(app, 'btn-refresh-projects') else Input('url', 'pathname'),
          Input('project-type-filter', 'value'),
-         Input('project-search', 'value'),
-         Input('btn-create-project', 'n_clicks')],
-        [State('new-project-name', 'value'),
-         State('new-project-description', 'value'),
-         State('new-project-type', 'value')],
+         Input('project-search', 'value')],
         prevent_initial_call=False
     )
-    def load_projects(pathname, filter_type, search, create_clicks, new_name, new_desc, new_type):
+    def load_projects(refresh, filter_type, search):
         """Load and display projects from database"""
-        ctx = callback_context
-        
-        # Handle project creation
-        if ctx.triggered and 'btn-create-project' in ctx.triggered[0]['prop_id']:
-            if new_name and new_type:
-                try:
-                    ProjectService.create_project(
-                        name=new_name,
-                        model_type=new_type,
-                        description=new_desc or ""
-                    )
-                except Exception as e:
-                    print(f"Error creating project: {e}")
-        
         try:
             # Get projects from database
             if filter_type and filter_type != 'all':
@@ -156,7 +136,7 @@ def register_callbacks(app):
     )
     def handle_project_modal(new_clicks, cancel_clicks, create_clicks,
                             is_open, name, model_type, description):
-        """Handle project modal"""
+        """Handle project modal and creation"""
         ctx = callback_context
         if not ctx.triggered:
             return is_open, "", "", None
@@ -167,8 +147,26 @@ def register_callbacks(app):
         if 'btn-new-project' in trigger_id:
             return True, "", "", None
         
-        # Cancel or create button clicked
-        if 'btn-cancel-project' in trigger_id or 'btn-create-project' in trigger_id:
+        # Cancel button clicked
+        if 'btn-cancel-project' in trigger_id:
             return False, "", "", None
         
-        return is_open, name or "", description or "", model_type
+        # Create button clicked
+        if 'btn-create-project' in trigger_id:
+            if not name or not model_type:
+                return True, name, description, model_type
+            
+            try:
+                # Create new project in database
+                ProjectService.create_project(
+                    name=name,
+                    model_type=model_type,
+                    description=description or ""
+                )
+                
+                return False, "", "", None
+            except Exception as e:
+                print(f"Error creating project: {e}")
+                return True, name, description, model_type
+        
+        return is_open, "", "", None

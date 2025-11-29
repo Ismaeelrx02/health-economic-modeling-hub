@@ -8,14 +8,11 @@ layout = dbc.Container([
     # Header with action button
     dbc.Row([
         dbc.Col([
-            html.H1("Projects", className="mb-2")
-        ], width=8),
-        dbc.Col([
             dbc.Button([
                 html.I(className="fas fa-plus me-2"),
                 "New Project"
             ], id="btn-new-project", color="danger", className="float-end")
-        ], width=4)
+        ], width=12)
     ], className="mb-4"),
     
     # Filters
@@ -27,7 +24,7 @@ layout = dbc.Container([
                 type="text",
                 className="mb-3"
             )
-        ], width=6),
+        ], width=8),
         dbc.Col([
             dcc.Dropdown(
                 id="project-type-filter",
@@ -41,21 +38,7 @@ layout = dbc.Container([
                 clearable=False,
                 className="mb-3"
             )
-        ], width=3),
-        dbc.Col([
-            dcc.Dropdown(
-                id="project-status-filter",
-                options=[
-                    {'label': 'All Status', 'value': 'all'},
-                    {'label': 'Draft', 'value': 'draft'},
-                    {'label': 'Active', 'value': 'active'},
-                    {'label': 'Completed', 'value': 'completed'},
-                ],
-                value='all',
-                clearable=False,
-                className="mb-3"
-            )
-        ], width=3),
+        ], width=4),
     ]),
     
     # Projects list

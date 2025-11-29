@@ -7,13 +7,6 @@ import plotly.graph_objects as go
 
 # Dashboard layout
 layout = dbc.Container([
-    # Header
-    dbc.Row([
-        dbc.Col([
-            html.H1("Dashboard", className="mb-2")
-        ])
-    ], className="mb-4"),
-    
     # Statistics Cards
     dbc.Row([
         dbc.Col([

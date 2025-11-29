@@ -153,6 +153,35 @@ body {
     padding: 20px 0;
 }
 
+.nav-section {
+    margin: 10px 0;
+}
+
+.nav-section-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.nav-section-header i {
+    font-size: 14px;
+}
+
+.app-sidebar.collapsed .nav-section-header {
+    justify-content: center;
+    padding: 12px 10px;
+}
+
+.app-sidebar.collapsed .nav-section-header span {
+    display: none;
+}
+
 .nav-item {
     display: flex;
     align-items: center;
@@ -163,6 +192,14 @@ body {
     cursor: pointer;
     border-left: 4px solid transparent;
     white-space: nowrap;
+}
+
+.nav-sub-item {
+    padding-left: 40px !important;
+}
+
+.app-sidebar.collapsed .nav-sub-item {
+    padding-left: 10px !important;
 }
 
 .nav-item:hover {
