@@ -1,10 +1,11 @@
 """Configuration settings for the Dash application"""
+import os
 
 # Application Settings
 APP_TITLE = "Health Economic Modeling Hub"
 VERSION = "1.0.0"
-HOST = "127.0.0.1"
-PORT = 8050
+HOST = os.getenv("HOST", "0.0.0.0")  # Use 0.0.0.0 for production
+PORT = int(os.getenv("PORT", 8050))
 
 # Theme Settings
 THEME = {

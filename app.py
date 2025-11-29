@@ -229,6 +229,9 @@ compare_callbacks(app)
 dsa_callbacks(app)
 psa_callbacks(app)
 
+# Expose server for production deployment (Gunicorn, etc.)
+server = app.server
+
 if __name__ == '__main__':
     print(f"🚀 Starting Health Economic Modeling Hub on {HOST}:{PORT}")
     print(f"📊 Dashboard: http://{HOST}:{PORT}")
