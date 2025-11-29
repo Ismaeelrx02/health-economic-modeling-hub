@@ -9,22 +9,22 @@ def create_ai_chat_button():
     Returns the button component and modal dialog.
     """
     
-    # Floating button (bottom-right)
+    # Floating button (bottom-right) - Icon only
     chat_button = html.Div(
         dbc.Button(
-            [
-                html.I(className="fas fa-robot me-2"),
-                "AI Assistant"
-            ],
+            html.I(className="fas fa-robot", style={'fontSize': '24px'}),
             id="ai-chat-button",
             color="primary",
             size="lg",
             className="shadow-lg",
             style={
-                'borderRadius': '50px',
-                'padding': '12px 24px',
-                'fontSize': '16px',
-                'fontWeight': '600'
+                'borderRadius': '50%',
+                'width': '60px',
+                'height': '60px',
+                'padding': '0',
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'center'
             }
         ),
         style={
@@ -36,66 +36,19 @@ def create_ai_chat_button():
         }
     )
     
-    # Chat modal dialog
+    # Chat modal dialog - Clean, minimal
     chat_modal = dbc.Modal(
         [
             dbc.ModalHeader(
-                dbc.ModalTitle(
-                    html.Div([
-                        html.I(className="fas fa-robot me-2"),
-                        "AI Health Economics Assistant",
-                        html.Span(
-                            id="ai-provider-badge",
-                            className="badge bg-secondary ms-2",
-                            style={'fontSize': '12px'}
-                        )
-                    ])
-                ),
+                dbc.ModalTitle("AI Assistant"),
                 close_button=True
             ),
             dbc.ModalBody(
                 [
-                    # Provider selector
-                    html.Div(
-                        [
-                            html.Label("AI Provider:", className="fw-bold mb-2"),
-                            dbc.RadioItems(
-                                id="ai-provider-selector",
-                                options=[
-                                    {"label": " OpenAI (GPT-4o-mini)", "value": "openai"},
-                                    {"label": " Anthropic (Claude 3.5 Sonnet)", "value": "anthropic"}
-                                ],
-                                value="openai",
-                                inline=True,
-                                className="mb-3"
-                            )
-                        ]
-                    ),
-                    html.Hr(),
                     # Chat messages container
                     html.Div(
                         id="ai-chat-messages",
-                        children=[
-                            html.Div(
-                                [
-                                    html.Div(
-                                        [
-                                            html.I(className="fas fa-robot me-2"),
-                                            "Hello! I'm your health economics modeling assistant. I can help you with:"
-                                        ],
-                                        className="fw-bold mb-2"
-                                    ),
-                                    html.Ul([
-                                        html.Li("Cost-effectiveness analysis guidance"),
-                                        html.Li("Model structure recommendations"),
-                                        html.Li("Parameter estimation and validation"),
-                                        html.Li("Results interpretation"),
-                                        html.Li("Best practices and guidelines")
-                                    ])
-                                ],
-                                className="alert alert-info mb-3"
-                            )
-                        ],
+                        children=[],
                         style={
                             'height': '400px',
                             'overflowY': 'auto',
@@ -110,7 +63,7 @@ def create_ai_chat_button():
                         [
                             dbc.Textarea(
                                 id="ai-chat-input",
-                                placeholder="Ask me anything about health economic modeling...",
+                                placeholder="Ask about health economic modeling...",
                                 style={
                                     'resize': 'none',
                                     'minHeight': '60px'
@@ -139,7 +92,7 @@ def create_ai_chat_button():
             dbc.ModalFooter(
                 [
                     dbc.Button(
-                        [html.I(className="fas fa-trash me-2"), "Clear Chat"],
+                        [html.I(className="fas fa-trash me-2"), "Clear"],
                         id="ai-chat-clear",
                         color="secondary",
                         outline=True,
@@ -162,13 +115,15 @@ def create_ai_chat_button():
         scrollable=True
     )
     
-    # Store for conversation history
+    # Store for conversation history and provider
     conversation_store = dcc.Store(id='ai-conversation-history', data=[])
+    provider_store = dcc.Store(id='ai-provider-store', data='openai')  # Auto-fallback handled in backend
     
     return html.Div([
         chat_button,
         chat_modal,
-        conversation_store
+        conversation_store,
+        provider_store
     ])
 
 

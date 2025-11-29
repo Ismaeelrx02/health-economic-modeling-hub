@@ -78,24 +78,11 @@ app.layout = html.Div([
             ]),
             # Right side controls
             html.Div([
-                dcc.Dropdown(
-                    id='ai-mode-dropdown',
-                    options=[
-                        {'label': 'AI-Assisted', 'value': 'ai-assisted'},
-                        {'label': 'AI-Augmented', 'value': 'ai-augmented'},
-                        {'label': 'AI-Automated', 'value': 'ai-automated'}
-                    ],
-                    value='ai-assisted',
-                    clearable=False,
-                    searchable=False,
-                    className='ai-mode-dropdown'
-                ),
-                html.Span(id='ai-mode-indicator', className="ai-mode-badge"),
                 html.Button(
-                    html.I(className="fas fa-robot"),
-                    id='ai-assistant-btn',
-                    className='ai-assistant-btn',
-                    title='AI Assistant'
+                    id='ai-mode-indicator',
+                    className="ai-mode-badge",
+                    children='ASSISTED',
+                    n_clicks=0
                 )
             ], className='header-right')
         ], className='header-content')
@@ -106,65 +93,53 @@ app.layout = html.Div([
         # Collapsible Sidebar (Red background)
         html.Div([
             html.Div([
-                # Home
+                # Dashboard
                 dbc.NavLink([
-                    html.I(className="fas fa-home"),
-                    html.Span("Home", className='nav-text')
+                    html.I(className="fas fa-tachometer-alt"),
+                    html.Span("Dashboard", className='nav-text')
                 ], href="/", id="nav-dashboard", className='nav-item'),
                 
-                # Repository (Projects)
+                # Projects
                 dbc.NavLink([
-                    html.I(className="fas fa-archive"),
-                    html.Span("Repository", className='nav-text')
+                    html.I(className="fas fa-folder-open"),
+                    html.Span("Projects", className='nav-text')
                 ], href="/projects", id="nav-projects", className='nav-item'),
                 
-                # Protocol
+                # Decision Tree
                 dbc.NavLink([
-                    html.I(className="fas fa-file-alt"),
-                    html.Span("Protocol", className='nav-text')
-                ], href="/protocol", id="nav-protocol", className='nav-item'),
+                    html.I(className="fas fa-sitemap"),
+                    html.Span("Decision Tree", className='nav-text')
+                ], href="/decision-tree", id="nav-decision-tree", className='nav-item'),
                 
-                # Literature Search
+                # Markov Model
                 dbc.NavLink([
-                    html.I(className="fas fa-search"),
-                    html.Span("Literature Search", className='nav-text')
-                ], href="/literature", id="nav-literature", className='nav-item'),
+                    html.I(className="fas fa-project-diagram"),
+                    html.Span("Markov Model", className='nav-text')
+                ], href="/markov", id="nav-markov", className='nav-item'),
                 
-                # Article Screening
+                # PSM
                 dbc.NavLink([
-                    html.I(className="fas fa-filter"),
-                    html.Span("Article Screening", className='nav-text')
-                ], href="/decision-tree", id="nav-screening", className='nav-item'),
+                    html.I(className="fas fa-chart-line"),
+                    html.Span("Partitioned Survival", className='nav-text')
+                ], href="/psm", id="nav-psm", className='nav-item'),
                 
-                # Study Quality
+                # Compare
                 dbc.NavLink([
-                    html.I(className="fas fa-check-circle"),
-                    html.Span("Study Quality", className='nav-text')
-                ], href="/markov", id="nav-quality", className='nav-item'),
+                    html.I(className="fas fa-balance-scale"),
+                    html.Span("Compare Strategies", className='nav-text')
+                ], href="/compare", id="nav-compare", className='nav-item'),
                 
-                # Data Extraction
+                # DSA
                 dbc.NavLink([
-                    html.I(className="fas fa-database"),
-                    html.Span("Data Extraction", className='nav-text')
-                ], href="/psm", id="nav-extraction", className='nav-item'),
+                    html.I(className="fas fa-sliders-h"),
+                    html.Span("Sensitivity Analysis", className='nav-text')
+                ], href="/dsa", id="nav-dsa", className='nav-item'),
                 
-                # Evidence Synthesis
+                # PSA
                 dbc.NavLink([
-                    html.I(className="fas fa-chart-bar"),
-                    html.Span("Evidence Synthesis", className='nav-text')
-                ], href="/compare", id="nav-synthesis", className='nav-item'),
-                
-                # Report
-                dbc.NavLink([
-                    html.I(className="fas fa-file-pdf"),
-                    html.Span("Report", className='nav-text')
-                ], href="/dsa", id="nav-report", className='nav-item'),
-                
-                # Settings & Team
-                dbc.NavLink([
-                    html.I(className="fas fa-cog"),
-                    html.Span("Settings & Team", className='nav-text')
-                ], href="/psa", id="nav-settings", className='nav-item'),
+                    html.I(className="fas fa-dice"),
+                    html.Span("Probabilistic Analysis", className='nav-text')
+                ], href="/psa", id="nav-psa", className='nav-item'),
             ], className='sidebar-nav')
         ], id='sidebar', className='app-sidebar'),
         
@@ -195,20 +170,29 @@ def toggle_sidebar(n_clicks, state):
     else:
         return 'app-sidebar', 'app-content', {'collapsed': False}
 
-# Callback for AI mode indicator update
+# Callback for AI mode indicator update - cycle through modes on click
 @app.callback(
-    Output('ai-mode-indicator', 'children'),
-    Output('ai-mode-store', 'data'),
-    Input('ai-mode-dropdown', 'value')
+    [Output('ai-mode-indicator', 'children'),
+     Output('ai-mode-store', 'data')],
+    Input('ai-mode-indicator', 'n_clicks'),
+    State('ai-mode-store', 'data')
 )
-def update_ai_mode(mode):
-    """Update AI mode indicator badge and store"""
-    mode_labels = {
-        'ai-assisted': 'ASSISTED',
-        'ai-augmented': 'AUGMENTED',
-        'ai-automated': 'AUTOMATED'
-    }
-    return mode_labels.get(mode, 'ASSISTED'), mode
+def cycle_ai_mode(n_clicks, current_mode):
+    """Cycle through AI modes on button click"""
+    if n_clicks is None or n_clicks == 0:
+        return 'ASSISTED', 'ai-assisted'
+    
+    modes = ['ai-assisted', 'ai-augmented', 'ai-automated']
+    labels = {'ai-assisted': 'ASSISTED', 'ai-augmented': 'AUGMENTED', 'ai-automated': 'AUTOMATED'}
+    
+    # Get current index and cycle to next
+    try:
+        current_idx = modes.index(current_mode)
+        next_idx = (current_idx + 1) % len(modes)
+        next_mode = modes[next_idx]
+        return labels[next_mode], next_mode
+    except:
+        return 'ASSISTED', 'ai-assisted'
 
 # Callback for page routing
 @app.callback(
@@ -260,7 +244,7 @@ from services.ai_service import AIService
 from components.ai.AIChat import format_chat_message
 from datetime import datetime
 
-# Initialize AI service
+# Initialize AI service with auto-fallback
 ai_service = AIService()
 
 @app.callback(
@@ -276,18 +260,6 @@ def toggle_ai_modal(open_clicks, close_clicks, is_open):
     return is_open
 
 @app.callback(
-    Output('ai-provider-badge', 'children'),
-    Input('ai-provider-selector', 'value')
-)
-def update_provider_badge(provider):
-    """Update provider badge in modal header"""
-    if provider == 'openai':
-        return "OpenAI"
-    elif provider == 'anthropic':
-        return "Anthropic"
-    return "AI"
-
-@app.callback(
     [Output('ai-chat-messages', 'children'),
      Output('ai-chat-input', 'value'),
      Output('ai-conversation-history', 'data'),
@@ -297,12 +269,11 @@ def update_provider_badge(provider):
      Input('ai-chat-clear', 'n_clicks')],
     [State('ai-chat-input', 'value'),
      State('ai-conversation-history', 'data'),
-     State('ai-chat-messages', 'children'),
-     State('ai-provider-selector', 'value')],
+     State('ai-chat-messages', 'children')],
     prevent_initial_call=True
 )
-def handle_chat(send_clicks, n_submit, clear_clicks, message, history, current_messages, provider):
-    """Handle chat interactions"""
+def handle_chat(send_clicks, n_submit, clear_clicks, message, history, current_messages):
+    """Handle chat interactions with auto-fallback between providers"""
     from dash import callback_context
     
     if not callback_context.triggered:
@@ -312,25 +283,14 @@ def handle_chat(send_clicks, n_submit, clear_clicks, message, history, current_m
     
     # Clear chat
     if 'clear' in trigger:
-        initial_message = html.Div(
-            [
-                html.Div(
-                    [
-                        html.I(className="fas fa-robot me-2"),
-                        "Chat cleared. How can I help you?"
-                    ],
-                    className="fw-bold mb-2"
-                ),
-            ],
-            className="alert alert-info mb-3"
-        )
-        return [initial_message], '', [], 'Chat history cleared'
+        return [], '', [], 'Chat history cleared'
     
     # Send message
     if ('send' in trigger or 'submit' in trigger) and message and message.strip():
-        # Initialize service with selected provider
+        # Use global AI service with auto-fallback
         global ai_service
-        ai_service = AIService(provider=provider)
+        if not ai_service.is_available():
+            ai_service = AIService()  # Reinitialize with fallback
         
         # Check if service is available
         if not ai_service.is_available():
@@ -347,7 +307,7 @@ def handle_chat(send_clicks, n_submit, clear_clicks, message, history, current_m
         timestamp = datetime.now().strftime("%H:%M")
         user_msg = format_chat_message(message, is_user=True, timestamp=timestamp)
         
-        # Get AI response
+        # Get AI response with auto-fallback
         try:
             response = ai_service.chat(message, conversation_history=history)
             ai_msg = format_chat_message(response, is_user=False, timestamp=datetime.now().strftime("%H:%M"))
@@ -358,7 +318,8 @@ def handle_chat(send_clicks, n_submit, clear_clicks, message, history, current_m
                 {"role": "assistant", "content": response}
             ]
             
-            return current_messages + [user_msg, ai_msg], '', new_history, f'Response from {provider.upper()}'
+            provider_name = ai_service.provider.value.upper() if ai_service.provider else "AI"
+            return current_messages + [user_msg, ai_msg], '', new_history, f'Response from {provider_name}'
         
         except Exception as e:
             error_msg = format_chat_message(

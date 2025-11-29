@@ -44,18 +44,55 @@ Be concise, accurate, and cite relevant guidelines (CHEERS, NICE, ISPOR) when ap
     
     def __init__(self, provider: str = None, api_key: str = None):
         """
-        Initialize AI service.
+        Initialize AI service with auto-fallback.
+        Tries OpenAI first, falls back to Anthropic if OpenAI fails.
         
         Args:
-            provider: 'openai' or 'anthropic'. If None, auto-detect from env vars.
+            provider: 'openai' or 'anthropic'. If None, auto-detect with fallback.
             api_key: API key. If None, read from environment.
         """
-        self.provider = self._determine_provider(provider)
-        self.api_key = api_key or self._get_api_key()
+        self.provider = None
+        self.api_key = None
         self.client = None
         
-        if self.api_key:
-            self._initialize_client()
+        # Try to initialize with auto-fallback
+        if provider:
+            # User specified provider
+            self.provider = AIProvider(provider.lower())
+            self.api_key = api_key or self._get_api_key()
+            if self.api_key:
+                self._initialize_client()
+        else:
+            # Auto-detect with fallback: OpenAI -> Anthropic
+            self._initialize_with_fallback()
+    
+    def _initialize_with_fallback(self):
+        """Initialize with automatic fallback between providers"""
+        # Try OpenAI first
+        if os.getenv('OPENAI_API_KEY'):
+            try:
+                self.provider = AIProvider.OPENAI
+                self.api_key = os.getenv('OPENAI_API_KEY')
+                self._initialize_client()
+                if self.client:
+                    logger.info("AI service initialized with OpenAI")
+                    return
+            except Exception as e:
+                logger.warning(f"OpenAI initialization failed: {e}, trying Anthropic...")
+        
+        # Fallback to Anthropic
+        if os.getenv('ANTHROPIC_API_KEY'):
+            try:
+                self.provider = AIProvider.ANTHROPIC
+                self.api_key = os.getenv('ANTHROPIC_API_KEY')
+                self._initialize_client()
+                if self.client:
+                    logger.info("AI service initialized with Anthropic (fallback)")
+                    return
+            except Exception as e:
+                logger.warning(f"Anthropic initialization failed: {e}")
+        
+        logger.warning("No AI provider available - both OpenAI and Anthropic failed")
     
     def _determine_provider(self, provider: Optional[str]) -> AIProvider:
         """Determine which provider to use"""
